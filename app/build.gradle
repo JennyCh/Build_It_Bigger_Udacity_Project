@@ -1,29 +1,85 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'udacity'
+            keyPassword 'borisov'
+            storeFile file('C:/Users/Jenny/Documents/ud867-master/ud867-master/FinalProject/keystore.jks')
+            storePassword 'borisov'
+        }
+    }
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
-
     defaultConfig {
         applicationId "com.udacity.gradle.builditbigger"
-        minSdkVersion 10
-        targetSdkVersion 22
+        minSdkVersion 14
+        targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
+
     }
+
+    // add dexOptions
+    dexOptions {
+        incremental true
+        javaMaxHeapSize "4g"
+    }
+
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
+    }
+
+    productFlavors {
+        paid {
+            applicationId "com.udacity.gradle.builditbigger.paid"
+        }
+        free {
+            applicationId "com.udacity.gradle.builditbigger.free"
+        }
+
     }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:23'
-    // Added for AdMob
-    compile 'com.google.android.gms:play-services:7.3.0'
-    compile  project(':joketellingjavalibrary')
-    compile  project(':joke_telling_android_library')
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    // include java feeding library
+    compile project(':joketellingjavalibrary')
+    //include android activity library that displays the jokes
+    compile project(':joke_telling_android_library')
+    //add backend the provides jokes from the java library
+    compile project(path: ':backend', configuration: 'android-endpoints')
+    // support older versions of android
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:support-v4:23.1.1'
+    //only free version uses google play services (Add)
+    freeCompile 'com.google.android.gms:play-services:8.4.0'
+    //allow 65k methods
+    compile 'com.android.support:multidex:1.0.1'
+
+ /*   compile 'com.android.support:design:23.1.1'*/
+   /* compile 'com.google.android.gms:play-services-ads:8.4.0'*/
+}
+
+
+task runAppEngine (dependsOn: [":backend:appengineRun",
+                               ":app:connectedAndroidTest",
+                               ":backend:appengineStop"]) {
+    evaluationDependsOn ":backend"
+
+    project(":backend") {
+        appengine {
+            daemon true
+        }
+    }
+
+    doLast {
+        println "Success: 1. Launch the GCE local development server    2. Runs all tests   3. Shuts the server down again"
+    }
 }
