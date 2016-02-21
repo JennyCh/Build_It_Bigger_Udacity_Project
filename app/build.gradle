@@ -5,10 +5,12 @@ android {
         config {
             keyAlias 'udacity'
             keyPassword 'borisov'
-            storeFile file('C:/Users/Jenny/Documents/ud867-master/ud867-master/FinalProject/keystore.jks')
+            storeFile file('../keystore.jks')
             storePassword 'borisov'
         }
     }
+
+    //C:/Users/Jenny/Documents/ud867-master/ud867-master/FinalProject/
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
     defaultConfig {
@@ -68,11 +70,14 @@ dependencies {
 }
 
 
-task runAppEngine (dependsOn: [":backend:appengineRun",
-                               ":app:connectedAndroidTest",
-                               ":backend:appengineStop"]) {
-    evaluationDependsOn ":backend"
+task testLocalServer{
+    dependsOn ':backend:appengineRun'
+    mustRunAfter ':backend:appengineRun'
+    dependsOn ':app:connectedAndroidTest'
+    finalizedBy ':backend:appengineStop'
 
+
+    evaluationDependsOn ":backend"
     project(":backend") {
         appengine {
             daemon true
